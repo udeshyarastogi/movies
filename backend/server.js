@@ -59,8 +59,11 @@ fastify.post('/api/recommendations', async (request, reply) => {
     }
 
     // Call Groq API to get movie recommendations
+    // Using llama-3.3-70b-versatile (replacement for decommissioned llama-3.1-70b-versatile)
+    // Can be overridden with GROQ_MODEL environment variable
+    const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
     const completion = await groq.chat.completions.create({
-      model: 'llama-3.1-70b-versatile',
+      model: model,
       messages: [
         {
           role: 'system',
@@ -108,10 +111,34 @@ fastify.post('/api/recommendations', async (request, reply) => {
     });
 
   } catch (error) {
-    fastify.log.error(error);
-    return reply.status(500).send({ 
-      error: 'Failed to get movie recommendations',
-      message: error.message 
+    fastify.log.error('Error in recommendations endpoint:', error);
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to get movie recommendations';
+    let statusCode = 500;
+    
+    if (error.message?.includes('API key')) {
+      errorMessage = 'Groq API key is invalid or missing';
+      statusCode = 500;
+    } else if (error.message?.includes('decommissioned') || error.message?.includes('model_decommissioned')) {
+      errorMessage = 'The AI model has been updated. Please contact support or check backend configuration.';
+      statusCode = 500;
+      fastify.log.error('Model decommissioned error - update GROQ_MODEL environment variable');
+    } else if (error.message?.includes('parse')) {
+      errorMessage = 'Failed to parse AI response. Please try again.';
+      statusCode = 500;
+    } else if (error.message?.includes('database') || error.message?.includes('SQL')) {
+      errorMessage = 'Database error occurred';
+      statusCode = 500;
+    } else if (error.response) {
+      // Groq API error
+      errorMessage = `Groq API error: ${error.response.status} - ${error.message}`;
+      statusCode = 502;
+    }
+    
+    return reply.status(statusCode).send({ 
+      error: errorMessage,
+      message: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

@@ -20,7 +20,15 @@ function App() {
     setRecommendations([]);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || '/api';
+      // Handle API URL - if VITE_API_URL is set, use it (should include /api)
+      // Otherwise, use /api for local development with proxy
+      let apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        apiUrl = '/api';
+      } else {
+        // Ensure it doesn't have trailing slash
+        apiUrl = apiUrl.replace(/\/$/, '');
+      }
       const response = await fetch(`${apiUrl}/recommendations`, {
         method: 'POST',
         headers: {
@@ -29,10 +37,17 @@ function App() {
         body: JSON.stringify({ userInput: userInput.trim() }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        throw new Error(`Server error (${response.status}). Please check backend logs.`);
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to get recommendations');
+        // Show the actual error message from backend
+        const errorMsg = data.error || data.message || `Server error (${response.status})`;
+        throw new Error(errorMsg);
       }
 
       setRecommendations(data.recommendations || []);

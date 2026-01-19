@@ -174,6 +174,11 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive step-by-step instructions
 - Environment variable configuration
 - Troubleshooting common issues
 
+### Updating Deployed Services
+
+- **Render (Backend)**: See [RENDER_UPDATE_GUIDE.md](./RENDER_UPDATE_GUIDE.md) for how to update your backend
+- **Netlify (Frontend)**: Automatically deploys when you push to GitHub, or see Netlify dashboard for manual deploy
+
 ## Troubleshooting
 
 ### Backend won't start
