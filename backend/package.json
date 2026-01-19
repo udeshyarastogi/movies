@@ -1,0 +1,20 @@
+{
+  "name": "movie-recommendation-backend",
+  "version": "1.0.0",
+  "description": "Backend server for movie recommendations using Groq API",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["fastify", "groq", "movies"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^4.24.3",
+    "@fastify/cors": "^8.4.0",
+    "groq-sdk": "^0.3.1",
+    "better-sqlite3": "^9.2.2"
+  }
+}
